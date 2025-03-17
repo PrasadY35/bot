@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4b400;
+            color: white;
+        }
+        /* Admin Button */
+        .admin-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        /* Admin Panel */
+        #adminPanel {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid black;
+            width: 50%;
+            margin: 0 auto;
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stock List</h1>
+    <button class="admin-btn" onclick="showAdminLogin()">Admin Panel</button>
+
+    <!-- Stock Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody id="stockTable">
+            <!-- Stock data will be added here -->
+        </tbody>
+    </table>
+
+    <!-- Admin Panel (Hidden by Default) -->
+    <div id="adminPanel">
+        <h2>Admin Panel</h2>
+        <input type="text" id="itemName" placeholder="Item Name"><br><br>
+        <input type="number" id="itemQuantity" placeholder="Quantity"><br><br>
+        <input type="text" id="itemDescription" placeholder="Description"><br><br>
+        <button onclick="addStock()">Add Stock</button>
+    </div>
+
+    <script>
+    async function fetchStock() {
+        const response = await fetch("http://localhost:5000/api/stock");
+        const data = await response.json();
+        const stockTable = document.getElementById("stockTable");
+
+        stockTable.innerHTML = ""; // Clear existing table data
+
+        data.forEach((item, index) => {
+            const row = `<tr>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${item.description}</td>
+                <td>
+                    <button onclick="editStock(${index}, '${item.name}', ${item.quantity}, '${item.description}')">Edit</button>
+                    <button onclick="deleteStock('${item.name}')">Delete</button>
+                </td>
+            </tr>`;
+            stockTable.innerHTML += row;
+        });
+    }
+
+    fetchStock(); // Fetch stock data when the page loads
+
+    function showAdminLogin() {
+        let password = prompt("Enter Admin Password:");
+        if (password === "20102010") {
+            document.getElementById("adminPanel").style.display = "block";
+        } else {
+            alert("Incorrect Password!");
+        }
+    }
+
+    async function addStock() {
+        const name = document.getElementById("itemName").value;
+        const quantity = document.getElementById("itemQuantity").value;
+        const description = document.getElementById("itemDescription").value;
+
+        if (!name || !quantity || !description) {
+            alert("All fields are required!");
+            return;
+        }
+
+        const response = await fetch("http://localhost:5000/api/stock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, quantity, description })
+        });
+
+        const result = await response.json();
+        alert(result.message);
+        fetchStock(); // Refresh stock table
+    }
+
+    function editStock(index, name, quantity, description) {
+        document.getElementById("itemName").value = name;
+        document.getElementById("itemQuantity").value = quantity;
+        document.getElementById("itemDescription").value = description;
+
+        // Change "Add Stock" button to "Update Stock"
+        const addButton = document.querySelector("#adminPanel button");
+        addButton.textContent = "Update Stock";
+        addButton.onclick = async function () {
+            const updatedName = document.getElementById("itemName").value;
+            const updatedQuantity = document.getElementById("itemQuantity").value;
+            const updatedDescription = document.getElementById("itemDescription").value;
+
+            const response = await fetch("http://localhost:5000/api/stock/" + name, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: updatedName, quantity: updatedQuantity, description: updatedDescription })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            fetchStock(); // Refresh stock table
+
+            // Reset button to "Add Stock"
+            addButton.textContent = "Add Stock";
+            addButton.onclick = addStock;
+        };
+    }
+
+    async function deleteStock(name) {
+        const confirmDelete = confirm(`Are you sure you want to delete ${name}?`);
+        if (!confirmDelete) return;
+
+        const response = await fetch("stock.csv" + name, { method: "DELETE" });
+        const result = await response.json();
+        alert(result.message);
+        fetchStock(); // Refresh stock table
+    }
+
+    </script>
+</body>
+</html>
