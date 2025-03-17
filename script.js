@@ -10,7 +10,7 @@ async function askAI() {
 
     try {
         const response = await fetch("https://bot-ppkkhar-production.up.railway.app/ask", {  // ✅ Corrected URL
-            method: "GET",
+            method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: userMessage })
         });
