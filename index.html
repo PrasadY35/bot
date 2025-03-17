@@ -9,63 +9,96 @@
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         table {
-            width: 80%;
-            margin: 20px auto;
+            width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
         th, td {
-            border: 1px solid black;
+            border: 1px solid #ddd;
             padding: 10px;
             text-align: left;
         }
         th {
-            background-color: #f4b400;
+            background-color: #007BFF;
             color: white;
         }
         .admin-btn {
             position: absolute;
             top: 10px;
             right: 20px;
-            background-color: #ff5722;
+            background-color: #28a745;
             color: white;
             border: none;
             padding: 10px 15px;
             cursor: pointer;
+            border-radius: 5px;
+        }
+        .admin-btn:hover {
+            background-color: #218838;
         }
         #adminPanel {
             display: none;
             margin-top: 20px;
             padding: 20px;
             border: 2px solid black;
-            width: 50%;
-            margin: 0 auto;
-            background-color: #f1f1f1;
+            width: 100%;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
     <h1>Stock List</h1>
     <button class="admin-btn" onclick="showAdminLogin()">Admin Panel</button>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Item Name</th>
-                <th>Quantity</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="stockTable"></tbody>
-    </table>
+    
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="stockTable"></tbody>
+        </table>
+    </div>
 
     <div id="adminPanel">
         <h2>Admin Panel</h2>
-        <input type="text" id="itemName" placeholder="Item Name"><br><br>
-        <input type="number" id="itemQuantity" placeholder="Quantity"><br><br>
-        <input type="text" id="itemDescription" placeholder="Description"><br><br>
+        <input type="text" id="itemName" placeholder="Item Name">
+        <input type="number" id="itemQuantity" placeholder="Quantity">
+        <input type="text" id="itemDescription" placeholder="Description">
         <button onclick="addStock()">Add Stock</button>
     </div>
 
@@ -121,27 +154,6 @@
             stockData.push({ name, quantity, description });
             saveStock();
             alert("Stock item added!");
-        }
-
-        function editStock(index) {
-            const item = stockData[index];
-            document.getElementById("itemName").value = item.name;
-            document.getElementById("itemQuantity").value = item.quantity;
-            document.getElementById("itemDescription").value = item.description;
-
-            const addButton = document.querySelector("#adminPanel button");
-            addButton.textContent = "Update Stock";
-            addButton.onclick = function () {
-                stockData[index] = {
-                    name: document.getElementById("itemName").value,
-                    quantity: document.getElementById("itemQuantity").value,
-                    description: document.getElementById("itemDescription").value
-                };
-                saveStock();
-                alert("Stock updated!");
-                addButton.textContent = "Add Stock";
-                addButton.onclick = addStock;
-            };
         }
 
         function deleteStock(index) {
