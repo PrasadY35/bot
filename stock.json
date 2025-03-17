@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Urea Fertilizer",
+        "quantity": 50,
+        "description": "High-quality urea for plant growth"
+    },
+    {
+        "name": "DAP Fertilizer",
+        "quantity": 30,
+        "description": "Essential for root development"
+    },
+    {
+        "name": "Potash Fertilizer",
+        "quantity": 20,
+        "description": "Boosts plant resistance and growth"
+    }
+]
