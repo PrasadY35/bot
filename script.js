@@ -9,8 +9,8 @@ async function askAI() {
     chatBox.innerHTML += `<p><strong>AI:</strong> Thinking... 🤔</p>`;
 
     try {
-        const response = await fetch("https://bot-ppkkhar-production.up.railway.app/ask", {
-            method: "POST",
+        const response = await fetch("https://bot-ppkkhar-production.up.railway.app/ask", {  // ✅ Corrected URL
+            method: "GET",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ message: userMessage })
         });
