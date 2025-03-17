@@ -24,7 +24,6 @@
             background-color: #f4b400;
             color: white;
         }
-        /* Admin Button */
         .admin-btn {
             position: absolute;
             top: 10px;
@@ -35,7 +34,6 @@
             padding: 10px 15px;
             cursor: pointer;
         }
-        /* Admin Panel */
         #adminPanel {
             display: none;
             margin-top: 20px;
@@ -51,21 +49,18 @@
     <h1>Stock List</h1>
     <button class="admin-btn" onclick="showAdminLogin()">Admin Panel</button>
 
-    <!-- Stock Table -->
     <table>
         <thead>
             <tr>
                 <th>Item Name</th>
                 <th>Quantity</th>
                 <th>Description</th>
+                <th>Actions</th>
             </tr>
         </thead>
-        <tbody id="stockTable">
-            <!-- Stock data will be added here -->
-        </tbody>
+        <tbody id="stockTable"></tbody>
     </table>
 
-    <!-- Admin Panel (Hidden by Default) -->
     <div id="adminPanel">
         <h2>Admin Panel</h2>
         <input type="text" id="itemName" placeholder="Item Name"><br><br>
@@ -75,98 +70,89 @@
     </div>
 
     <script>
-    async function fetchStock() {
-        const response = await fetch("http://localhost:5000/api/stock");
-        const data = await response.json();
-        const stockTable = document.getElementById("stockTable");
+        let stockData = JSON.parse(localStorage.getItem("stockData")) || [
+            { name: "Urea", quantity: 200, description: "Used for paddy growth, rich in nitrogen" },
+            { name: "DAP", quantity: 150, description: "Provides phosphorus for root development" },
+            { name: "Potash", quantity: 100, description: "Essential for overall plant health" }
+        ];
 
-        stockTable.innerHTML = ""; // Clear existing table data
-
-        data.forEach((item, index) => {
-            const row = `<tr>
-                <td>${item.name}</td>
-                <td>${item.quantity}</td>
-                <td>${item.description}</td>
-                <td>
-                    <button onclick="editStock(${index}, '${item.name}', ${item.quantity}, '${item.description}')">Edit</button>
-                    <button onclick="deleteStock('${item.name}')">Delete</button>
-                </td>
-            </tr>`;
-            stockTable.innerHTML += row;
-        });
-    }
-
-    fetchStock(); // Fetch stock data when the page loads
-
-    function showAdminLogin() {
-        let password = prompt("Enter Admin Password:");
-        if (password === "20102010") {
-            document.getElementById("adminPanel").style.display = "block";
-        } else {
-            alert("Incorrect Password!");
-        }
-    }
-
-    async function addStock() {
-        const name = document.getElementById("itemName").value;
-        const quantity = document.getElementById("itemQuantity").value;
-        const description = document.getElementById("itemDescription").value;
-
-        if (!name || !quantity || !description) {
-            alert("All fields are required!");
-            return;
+        function saveStock() {
+            localStorage.setItem("stockData", JSON.stringify(stockData));
+            loadStock();
         }
 
-        const response = await fetch("http://localhost:5000/api/stock", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, quantity, description })
-        });
-
-        const result = await response.json();
-        alert(result.message);
-        fetchStock(); // Refresh stock table
-    }
-
-    function editStock(index, name, quantity, description) {
-        document.getElementById("itemName").value = name;
-        document.getElementById("itemQuantity").value = quantity;
-        document.getElementById("itemDescription").value = description;
-
-        // Change "Add Stock" button to "Update Stock"
-        const addButton = document.querySelector("#adminPanel button");
-        addButton.textContent = "Update Stock";
-        addButton.onclick = async function () {
-            const updatedName = document.getElementById("itemName").value;
-            const updatedQuantity = document.getElementById("itemQuantity").value;
-            const updatedDescription = document.getElementById("itemDescription").value;
-
-            const response = await fetch("http://localhost:5000/api/stock/" + name, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: updatedName, quantity: updatedQuantity, description: updatedDescription })
+        function loadStock() {
+            const stockTable = document.getElementById("stockTable");
+            stockTable.innerHTML = "";
+            stockData.forEach((item, index) => {
+                stockTable.innerHTML += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.description}</td>
+                        <td>
+                            <button onclick="editStock(${index})">Edit</button>
+                            <button onclick="deleteStock(${index})">Delete</button>
+                        </td>
+                    </tr>
+                `;
             });
+        }
 
-            const result = await response.json();
-            alert(result.message);
-            fetchStock(); // Refresh stock table
+        function showAdminLogin() {
+            let password = prompt("Enter Admin Password:");
+            if (password === "20102010") {
+                document.getElementById("adminPanel").style.display = "block";
+            } else {
+                alert("Incorrect Password!");
+            }
+        }
 
-            // Reset button to "Add Stock"
-            addButton.textContent = "Add Stock";
-            addButton.onclick = addStock;
-        };
-    }
+        function addStock() {
+            const name = document.getElementById("itemName").value;
+            const quantity = document.getElementById("itemQuantity").value;
+            const description = document.getElementById("itemDescription").value;
 
-    async function deleteStock(name) {
-        const confirmDelete = confirm(`Are you sure you want to delete ${name}?`);
-        if (!confirmDelete) return;
+            if (!name || !quantity || !description) {
+                alert("All fields are required!");
+                return;
+            }
 
-        const response = await fetch("stock.csv" + name, { method: "DELETE" });
-        const result = await response.json();
-        alert(result.message);
-        fetchStock(); // Refresh stock table
-    }
+            stockData.push({ name, quantity, description });
+            saveStock();
+            alert("Stock item added!");
+        }
 
+        function editStock(index) {
+            const item = stockData[index];
+            document.getElementById("itemName").value = item.name;
+            document.getElementById("itemQuantity").value = item.quantity;
+            document.getElementById("itemDescription").value = item.description;
+
+            const addButton = document.querySelector("#adminPanel button");
+            addButton.textContent = "Update Stock";
+            addButton.onclick = function () {
+                stockData[index] = {
+                    name: document.getElementById("itemName").value,
+                    quantity: document.getElementById("itemQuantity").value,
+                    description: document.getElementById("itemDescription").value
+                };
+                saveStock();
+                alert("Stock updated!");
+                addButton.textContent = "Add Stock";
+                addButton.onclick = addStock;
+            };
+        }
+
+        function deleteStock(index) {
+            if (confirm("Are you sure you want to delete this item?")) {
+                stockData.splice(index, 1);
+                saveStock();
+                alert("Stock deleted!");
+            }
+        }
+
+        loadStock();
     </script>
 </body>
 </html>
